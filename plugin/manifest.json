@@ -1,0 +1,68 @@
+{
+  "id": "bigfile-link",
+  "name": "Big file links",
+  "version": "1.6.0",
+  "author": "CampusAgro",
+  "description": "Uploads large composer attachments to Gokapi and inserts expiring download links.",
+  "type": "hook",
+  "permissions": [
+    "email:blob-read",
+    "email:blob-write",
+    "http:post"
+  ],
+  "entrypoint": "index.js",
+  "minAppVersion": "1.9.0",
+  "apiPostPaths": [
+    "/api/bigfile-link/upload"
+  ],
+  "settingsSchema": {
+    "thresholdBytes": {
+      "type": "number",
+      "label": "Large attachment threshold (bytes)",
+      "description": "Files larger than this value are replaced with a link. Default: 20 MiB.",
+      "default": 20971520,
+      "min": 1048576,
+      "max": 524288000
+    },
+    "expiryDays": {
+      "type": "number",
+      "label": "Link expiry (days)",
+      "description": "Maximum lifetime of each public link.",
+      "default": 7,
+      "min": 1,
+      "max": 365
+    },
+    "templateHtml": {
+      "type": "string",
+      "label": "HTML link template",
+      "description": "Placeholders: {{name}}, {{size}}, {{url}}, {{expires}}.",
+      "default": "<div style=\"margin:16px 0\"><div style=\"margin-bottom:6px\">К письму приложены файлы:</div><div style=\"margin-bottom:8px\"><span style=\"font-weight:600\">{{name}}</span><span style=\"color:#5b6b7c\"> ({{size}})</span></div><div style=\"margin-bottom:8px\"><a href=\"{{url}}\">Скачать файл</a></div><span style=\"font-size:12px;color:#5b6b7c\">Ссылка действует до {{expires}}</span></div>"
+    },
+    "templateText": {
+      "type": "string",
+      "label": "Plain-text link template",
+      "description": "Placeholders: {{name}}, {{size}}, {{url}}, {{expires}}.",
+      "default": "\n\nК письму приложены файлы:\n{{name}} ({{size}})\nСкачать: {{url}}\nСсылка действует до {{expires}}\n"
+    }
+  },
+  "locales": {
+    "ru": {
+      "uploading": "Загружаю большой файл «{name}» в файлодроп…",
+      "uploaded": "Файл «{name}» заменён ссылкой.",
+      "failed": "Не удалось загрузить «{name}»: {error}",
+      "retry_title": "Ошибка загрузки большого файла",
+      "retry_message": "Не удалось загрузить «{name}» в файлодроп. Повторить попытку? Если выбрать «Отправить как вложение», файл будет прикреплён обычным способом.",
+      "retry": "Повторить",
+      "send_as_attachment": "Отправить как вложение"
+    },
+    "en": {
+      "uploading": "Uploading large file “{name}” to the file drop…",
+      "uploaded": "File “{name}” was replaced with a link.",
+      "failed": "Could not upload “{name}”: {error}",
+      "retry_title": "Large file upload failed",
+      "retry_message": "Could not upload “{name}” to the file drop. Retry? Choosing “Send as attachment” keeps the original attachment.",
+      "retry": "Retry",
+      "send_as_attachment": "Send as attachment"
+    }
+  }
+}

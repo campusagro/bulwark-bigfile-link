@@ -1,0 +1,12 @@
+# Put inside the site block of every host the webmail is served on, BEFORE the
+# reverse_proxy to Bulwark. The plugin POSTs to this same-origin path; the
+# service holds the Gokapi key and checks the caller's JMAP session first.
+@bigfile path /api/bigfile-link/upload
+handle @bigfile {
+	reverse_proxy 127.0.0.1:8099 {
+		transport http {
+			dial_timeout 10s
+			response_header_timeout 5m
+		}
+	}
+}

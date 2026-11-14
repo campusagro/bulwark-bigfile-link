@@ -1,0 +1,46 @@
+# Upload proxy for the bigfile-link plugin.
+#
+# Lives beside Gokapi rather than inside Bulwark: the reverse proxy routes the
+# single path /api/bigfile-link/upload here, so Bulwark keeps running the stock
+# upstream image and its updates.
+
+services:
+  bigfile-link:
+    build: .
+    image: local/bigfile-link-service:1.0.0
+    container_name: bigfile-link
+    restart: unless-stopped
+    # The reverse proxy runs on the host, so the port is published to loopback
+    # only. The service must never be reachable from the internet directly: it
+    # would still demand a valid JMAP session, but there is no reason to expose it.
+    ports:
+      - "127.0.0.1:8099:8099"
+    environment:
+      PORT: "8099"
+      # Where the caller's credentials are verified: the same JMAP server the
+      # webmail signs in to.
+      JMAP_SERVER_URL: "https://mail.example.com"
+      # Gokapi base URL as seen from this container (here: by container name on
+      # a shared Docker network).
+      BIGFILE_LINK_GOKAPI_ENDPOINT: "http://gokapi:53842"
+      BIGFILE_LINK_GOKAPI_API_KEY_FILE: "/run/secrets/gokapi_upload_key"
+      # Upload ceiling in bytes (200 MiB). The body is streamed, but Gokapi
+      # still has to land it on disk.
+      BIGFILE_LINK_MAX_BYTES: "209715200"
+    volumes:
+      # A Gokapi API key with the Upload permission only.
+      - ./secrets/gokapi_upload_key:/run/secrets/gokapi_upload_key:ro
+    networks:
+      - gokapi
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 256m
+
+networks:
+  gokapi:
+    # The network your Gokapi container is attached to.
+    name: gokapi_default
+    external: true
